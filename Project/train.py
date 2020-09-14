@@ -47,28 +47,28 @@ def _main():
     logging = TensorBoard(log_dir=log_dir)
     checkpoint = ModelCheckpoint(log_dir + 'ep{epoch:03d}-loss{loss:.3f}-val_loss{val_loss:.3f}.h5',
         monitor='val_loss', save_weights_only=True, save_best_only=True, period=3)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1)
-    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=3, verbose=1) #当评价指标不再提升时，减少学习率
+    early_stopping = EarlyStopping(monitor='val_loss', min_delta=0, patience=10, verbose=1) #当检测值不再改变时，中止训练
 
     val_split = 0.1
     with open(annotation_path) as f:
-        lines = f.readlines()
+        lines = f.readlines() #读取所有行
     np.random.seed(10101)
     np.random.shuffle(lines)
     np.random.seed(None)
     num_val = int(len(lines)*val_split)
     num_train = len(lines) - num_val
 
-    stage1_epochs = 1
-    stage2_epochs = 1
+    stage1_epochs = 10
+    stage2_epochs = 10
     # Train with frozen layers first, to get a stable loss.
     # Adjust num epochs to your dataset. This step is enough to obtain a not bad model.
-    if True:
+    if True: #自定义损失函数
         model.compile(optimizer=Adam(lr=1e-3), loss={
             # use custom yolo_loss Lambda layer.
             'yolo_loss': lambda y_true, y_pred: y_pred})
 
-        batch_size = 4
+        batch_size = 32
         print('Train on {} samples, val on {} samples, with batch size {}.'.format(num_train, num_val, batch_size))
         history1 = model.fit_generator(data_generator_wrapper(lines[:num_train], batch_size, input_shape, anchors, num_classes),
                 steps_per_epoch=max(1, num_train//batch_size),
@@ -81,7 +81,7 @@ def _main():
         
         np.savez('trainHistory1.npz', history = history1.history)
         with open('trainHistory1.json', 'w') as f:
-            json.dump(history1.history, f, cls = MyEncoder )#编码json文件
+            json.dump(history1.history, f, cls = MyEncoder )
         print('Setp1 done! Save history to trainHistory1.json successfully!')
 
     # Unfreeze and continue training, to fine-tune.
@@ -136,6 +136,7 @@ def create_model(input_shape, anchors, num_classes, load_pretrained=True, freeze
 
     y_true = [Input(shape=(h//{0:32, 1:16, 2:8}[l], w//{0:32, 1:16, 2:8}[l], \
         num_anchors//3, num_classes+5)) for l in range(3)]
+    #三个尺度（13，13，3，6）之类的,{}是字典，[]列表
 
     model_body = yolo_body(image_input, num_anchors//3, num_classes)
     print('Create YOLOv3 model with {} anchors and {} classes.'.format(num_anchors, num_classes))
@@ -187,7 +188,7 @@ def create_tiny_model(input_shape, anchors, num_classes, load_pretrained=True, f
     return model
 
 def data_generator(annotation_lines, batch_size, input_shape, anchors, num_classes):
-    '''data generator for fit_generator'''
+    '''data generator for fit_generator'''#去生成图像资料产生器
     n = len(annotation_lines)
     i = 0
     while True:
@@ -195,14 +196,14 @@ def data_generator(annotation_lines, batch_size, input_shape, anchors, num_class
         box_data = []
         for b in range(batch_size):
             if i==0:
-                np.random.shuffle(annotation_lines)
-            image, box = get_random_data(annotation_lines[i], input_shape, random=True)
+                np.random.shuffle(annotation_lines)  #图片乱序
+            image, box = get_random_data(annotation_lines[i], input_shape, random=True) #分开图片地址和标签值
             image_data.append(image)
             box_data.append(box)
             i = (i+1) % n
-        image_data = np.array(image_data)
-        box_data = np.array(box_data)
-        y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes)
+        image_data = np.array(image_data)  #图片转换成矩阵
+        box_data = np.array(box_data)      #BBOX转换成矩阵
+        y_true = preprocess_true_boxes(box_data, input_shape, anchors, num_classes)  #真实坐标转化为YOLO输入坐标
         yield [image_data, *y_true], np.zeros(batch_size)
 
 def data_generator_wrapper(annotation_lines, batch_size, input_shape, anchors, num_classes):
