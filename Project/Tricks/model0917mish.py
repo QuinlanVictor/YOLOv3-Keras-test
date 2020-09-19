@@ -100,14 +100,14 @@ def yolo_body(inputs, num_anchors, num_classes):
 
     """在backbone之后加入SPP模块"""
     """DBL*3"""
-    darknet = DarknetConv2D_BN_Leaky(512,(1,1))(darknet)
+    darknet = DarknetConv2D_BN_Leaky(512,(1,1))(darknet.output)
     x = DarknetConv2D_BN_Leaky(1024,(3,3))(darknet)
     x = DarknetConv2D_BN_Leaky(512,(1,1))(x)
     """SPP"""
     maxpool1=MaxPooling2D(pool_size=(13,13),strides=(1,1),padding='same')(x)
     maxpool2=MaxPooling2D(pool_size=(9,9),strides=(1,1),padding='same')(x)
     maxpool3=MaxPooling2D(pool_size=(5,5),strides=(1,1),padding='sanme')(x)
-    maxcon=Concatenate()([maxpool1,maxpool2,maxpool3.x])
+    maxcon=Concatenate()([maxpool1,maxpool2,maxpool3,x])
     """DBL*3"""
     sppout = compose(
         DarknetConv2D_BN_Leaky(512, (1, 1)),
