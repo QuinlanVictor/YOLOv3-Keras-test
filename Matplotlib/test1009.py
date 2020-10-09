@@ -29,12 +29,34 @@ plt.plot(x, y)
 plt.show()
 
 
-ax.set_aspect('equal') 
+"""
+学习matplotlib的用法
+"""
+
+A=np.arange(1,5)
+B=A**2
+C=A**3
+
+fig,ax=plt.subplots(figsize=(14,7))
+
+ax.plot(A,B)
+ax.plot(B,A)
+
+
+ax.set_title('TITLT',fontsize=18)
+ax.set_xlabel('xlabel',fontsize=18,fontfamily='sans-serif',fontstyle='italic')
+ax.set_ylabel('ylabel',fontsize='x-large',fontstyle='oblique')
+ax.legend()
+
+ax.set_aspect('equal')
 ax.minorticks_on() 
-ax.set_xlim(0,16) 
+ax.set_xlim(0,16)
 ax.grid(which='minor', axis='both')
 
-ax.xaxis.set_tick_params(rotation=45,labelsize=18,colors='w') 
-start, end = ax.get_xlim() 
-ax.xaxis.set_ticks(np.arange(start, end,1)) 
+ax.xaxis.set_tick_params(rotation=45,labelsize=18,colors='w')
+start, end = ax.get_xlim()
+ax.xaxis.set_ticks(np.arange(start, end,1))
 ax.yaxis.tick_right()
+
+
+plt.show()
