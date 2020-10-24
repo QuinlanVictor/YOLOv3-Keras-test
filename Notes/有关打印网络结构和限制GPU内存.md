@@ -4,6 +4,10 @@
 
 打印：
 
+    from keras.utils import plot_model
+    
     plot_model(model,to_file='model_data/model.png',show_shapes=True,show_layer_names=True) #储存网络结构
     
     model.summary()#打印网络
+
+限制GPU内存：
