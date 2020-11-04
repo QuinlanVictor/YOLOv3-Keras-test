@@ -42,7 +42,8 @@ ax.axis["y"].set_axisline_style("->", size=2.0)
 # ax.axis["x"].set_axis_direction('top')
 # ax.axis["y"].set_axis_direction('left')
 
-
+ax.set_xticks([-4,-2,2,4])
+ax.set_yticks([1,2,3,4])
 
 plt.plot(x, y,label='Mish')
 
