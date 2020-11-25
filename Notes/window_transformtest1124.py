@@ -52,8 +52,3 @@ tran = window_transform(ct_array, 1500, -400, normal=False)
 
 saved_preprocessed(tran, origin, direction, xyz_thickness, saved_name)
 
-
-
-"""
-![Image text](https://github.com/QuinlanVictor/Leetcodenote/blob/master/IMG/myplot.png)
-"""
